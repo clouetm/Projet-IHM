@@ -1,7 +1,11 @@
 package com.example.myriam.myapplication;
 
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -17,6 +21,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -41,6 +46,10 @@ public class DaysActivity extends AppCompatActivity {
      */
     Calendar day;
 
+
+    SpeechRecognizer speechRec;
+
+    private final int REQ_CODE_SPEECH_INPUT = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,11 +90,20 @@ public class DaysActivity extends AppCompatActivity {
 
         // bouton flottant + : pour ajouter un rdv
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setImageResource(R.drawable.baseline_add_black_18dp);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 saisieNewRdv(view);
+            }
+        });
+
+
+        // bouton flottant micro : pour reconnaissance vocale
+        FloatingActionButton fabMicro = (FloatingActionButton) findViewById(R.id.micro);
+        fabMicro.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                promptSpeechInput();
             }
         });
 
@@ -102,9 +120,6 @@ public class DaysActivity extends AppCompatActivity {
      * @param view la vue attachée au popup
      */
     public void saisieNewRdv(View view){
-        Snackbar.make(view, "Ajouter un rdv", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show();
-
         LayoutInflater factory = LayoutInflater.from(this);
 
         //text_entry is an Layout XML file containing two text field to display in alert dialog
@@ -151,6 +166,7 @@ public class DaysActivity extends AppCompatActivity {
         rdvArrayList.add(new Rdv(nom, horaire));
         rdvArrayList = triRdvs(rdvArrayList);
         afficherRdvs(ArrayStringFromArrayRdv(rdvArrayList));
+        Toast.makeText(getApplicationContext(), "Le rendez-vous " + nom + " a été ajouté.",Toast.LENGTH_LONG).show();
     }
 
 
@@ -218,7 +234,6 @@ public class DaysActivity extends AppCompatActivity {
      * Lis la liste des rdv de la page
      */
     public void lecture(){
-        //Toast.makeText(getApplicationContext(), "lecture des rdvs",Toast.LENGTH_LONG).show();
         txtToSpeech.speak(textALire(), TextToSpeech.QUEUE_FLUSH, null);
     }
 
@@ -233,11 +248,52 @@ public class DaysActivity extends AppCompatActivity {
         }
         else{
             text = "Vous avez " + rdvArrayList.size() + " rendez-vous aujourd'hui";
-            Log.i("speek","pluisuers rdvs ");
-
         }
         return text;
     }
 
 
+
+    /**
+     * Showing google speech input dialog
+     * */
+    private void promptSpeechInput() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT,
+                "Vous pouvez parler");
+        try {
+            startActivityForResult(intent, REQ_CODE_SPEECH_INPUT);
+        } catch (ActivityNotFoundException a) {
+            Toast.makeText(getApplicationContext(),
+                    "La reconnaissance vocale n'est pas supportée sur cet appareil",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Receiving speech input
+     * */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+            case REQ_CODE_SPEECH_INPUT: {
+                if (resultCode == RESULT_OK && null != data) {
+
+                    ArrayList<String> result = data
+                            .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+
+                    Toast.makeText(getApplicationContext(),
+                            result.get(0),
+                            Toast.LENGTH_SHORT).show();
+                }
+                break;
+            }
+
+        }
+    }
 }
