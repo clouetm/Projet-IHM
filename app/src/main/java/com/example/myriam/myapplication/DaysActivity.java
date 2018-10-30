@@ -247,7 +247,8 @@ public class DaysActivity extends AppCompatActivity {
             text = "Vous n'avez pas de rendez-vous aujourd'hui";
         }
         else{
-            text = "Vous avez " + rdvArrayList.size() + " rendez-vous aujourd'hui";
+            text = "Vous avez " + rdvArrayList.size() + " rendez-vous aujourd'hui.";
+            text += " Votre prochain rendez-vous est à " + rdvArrayList.get(0).getHoraire();
         }
         return text;
     }
@@ -287,13 +288,53 @@ public class DaysActivity extends AppCompatActivity {
                     ArrayList<String> result = data
                             .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
 
+                    String action = reconnaissanceAction(result.get(0));
+
                     Toast.makeText(getApplicationContext(),
-                            result.get(0),
+                            action,
                             Toast.LENGTH_SHORT).show();
+
                 }
                 break;
             }
 
         }
+    }
+
+
+    /**
+     * analyse de la phrase entendue pour reconnaitre l'action à effectuer
+     * @param phrase phrase entendue
+     * @return une String correspondant à l'action reconnue
+     */
+    public String reconnaissanceAction(String phrase){
+        String[] mots = phrase.split("\\s+");
+
+        String action = "" ;
+        String nom = "rendez-vous";
+        DateFormat horaireFormatHeures = new SimpleDateFormat("HH");
+        DateFormat horaireFormatMinutes = new SimpleDateFormat("mm");
+        String horaire = horaireFormatHeures.format(day.getTime()) +"h"+ horaireFormatMinutes.format(day.getTime());
+
+        ArrayList<String> list_mot = new ArrayList<String>();
+
+        for(int i=0; i < mots.length; i++){
+            list_mot.add(mots[i]);
+        }
+        if(list_mot.contains("ajouter")){
+            action = "ajouter";
+            if(list_mot.contains("rendez-vous")){
+                if(list_mot.get(list_mot.indexOf("rendez-vous")+1) != "a" &&
+                        list_mot.get(list_mot.indexOf("rendez-vous")+1) != "à"){
+                            nom = list_mot.get(list_mot.indexOf("rendez-vous")+1);
+
+                }
+                if(list_mot.contains("à")){
+                    horaire = list_mot.get(list_mot.indexOf("à")+1);
+                }
+            }
+        }
+        addRdv(nom, horaire);
+        return action + " :" + nom + " à " + horaire ;
     }
 }
