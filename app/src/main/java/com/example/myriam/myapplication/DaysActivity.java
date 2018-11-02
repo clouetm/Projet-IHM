@@ -139,7 +139,7 @@ public class DaysActivity extends AppCompatActivity {
         inputHoraire.setText(horaire.format(day.getTime()), TextView.BufferType.EDITABLE);
 
         final AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setIcon(R.drawable.baseline_add_black_18dp).setTitle("EntertheText:").setView(textEntryView).setPositiveButton("Save",
+        alert.setIcon(R.drawable.baseline_add_black_18dp).setTitle("Saisir un rendez-vous :").setView(textEntryView).setPositiveButton("Save",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,
                                         int whichButton) {
@@ -306,6 +306,7 @@ public class DaysActivity extends AppCompatActivity {
         }
     }
 
+    int numTest = 1;
 
     /**
      * analyse de la phrase entendue pour reconnaitre l'action à effectuer
@@ -339,6 +340,23 @@ public class DaysActivity extends AppCompatActivity {
                 }
             }
         }
+
+        //!!!!!!!!!!!!!!!!!!!!!!!
+        // rdv fixe pour les premiers tests utilisateurs
+        //!!!!!!!!!!!!!!!!!!!!!!!
+        if(numTest == 1){
+            nom = "médical";
+            horaire = "13h30";
+            action="ajouter";
+            numTest = 2;
+        }
+        else {
+            nom = "stage";
+            horaire = "8h";
+            action="ajouter";
+            numTest = 1;
+        }
+
         addRdv(nom, horaire);
         return action + " :" + nom + " à " + horaire ;
     }
