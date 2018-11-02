@@ -30,6 +30,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import static android.speech.RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS;
+import static android.speech.RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS;
+import static android.speech.RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS;
+
 public class DaysActivity extends AppCompatActivity {
     /**
      * liste des rdvs
@@ -48,6 +52,7 @@ public class DaysActivity extends AppCompatActivity {
 
 
     SpeechRecognizer speechRec;
+
 
     private final int REQ_CODE_SPEECH_INPUT = 100;
 
@@ -125,8 +130,8 @@ public class DaysActivity extends AppCompatActivity {
         //text_entry is an Layout XML file containing two text field to display in alert dialog
         final View textEntryView = factory.inflate(R.layout.text_entry, null);
 
-        final EditText inputNom = (EditText) textEntryView.findViewById(R.id.EditText1);
-        final EditText inputHoraire = (EditText) textEntryView.findViewById(R.id.EditText2);
+        final EditText inputNom = (EditText) textEntryView.findViewById(R.id.EditText2);
+        final EditText inputHoraire = (EditText) textEntryView.findViewById(R.id.EditText1);
 
         // valeurs pré-remplies pour la saisie des informations du RDV à ajouter
         inputNom.setText("RDV", TextView.BufferType.EDITABLE);
