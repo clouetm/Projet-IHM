@@ -27,8 +27,6 @@ public class SpeechRec {
      * @return une String correspondant à l'action reconnue
      */
     public Action reconnaissanceAction(String phrase){
-        Action action;
-
         String[] mots = phrase.split("\\s+");
 
         Action.TypeAction typeAction = Action.TypeAction.NO_REC;
@@ -44,16 +42,12 @@ public class SpeechRec {
         }
         if(list_mot.contains("ajouter")){
             typeAction = Action.TypeAction.AJOUTER;
-            if(list_mot.contains("rendez-vous")){
-                if(list_mot.get(list_mot.indexOf("rendez-vous")+1) != "a" &&
-                        list_mot.get(list_mot.indexOf("rendez-vous")+1) != "à"){
-                    nom = list_mot.get(list_mot.indexOf("rendez-vous")+1);
-
-                }
-                if(list_mot.contains("à")){
-                    horaire = list_mot.get(list_mot.indexOf("à")+1);
-                }
-            }
+        }
+        if(list_mot.contains("rendez-vous")){
+            nom = list_mot.get(list_mot.indexOf("rendez-vous")+1);
+        }
+        if(list_mot.contains("à")){
+            horaire = list_mot.get(list_mot.indexOf("à")+1);
         }
 
         //!!!!!!!!!!!!!!!!!!!!!!!
@@ -72,8 +66,6 @@ public class SpeechRec {
             numTest = 1;
         }
 
-        //addRdv(nom, horaire);
-        //return action + " :" + nom + " à " + horaire ;
         return new Action(typeAction, new Rdv(nom, horaire));
     }
 

@@ -1,6 +1,7 @@
 package com.example.myriam.myapplication;
 
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,14 +12,19 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -115,9 +121,8 @@ public class DaysActivity extends AppCompatActivity {
 
 
         // affichage des rdvs
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, ArrayStringFromArrayRdv(rdvArrayList));
-        ListView cl = (ListView) findViewById(R.id.planning);
-        cl.setAdapter(adapter);
+        afficherRdvs();
+
     }
 
 
@@ -163,6 +168,7 @@ public class DaysActivity extends AppCompatActivity {
     }
 
 
+
     /**
      * Ajoute un rdv dans la liste des rdvs
      * @param nom l'intitulé du rdv
@@ -171,7 +177,7 @@ public class DaysActivity extends AppCompatActivity {
     public void addRdv(String nom, String horaire){
         rdvArrayList.add(new Rdv(nom, horaire));
         rdvArrayList = triRdvs(rdvArrayList);
-        afficherRdvs(ArrayStringFromArrayRdv(rdvArrayList));
+        afficherRdvs();
         Toast.makeText(getApplicationContext(), "Le rendez-vous " + nom + " a été ajouté.",Toast.LENGTH_LONG).show();
     }
 
@@ -184,6 +190,7 @@ public class DaysActivity extends AppCompatActivity {
      */
     public ArrayList<Rdv> triRdvs(ArrayList<Rdv> tab){
         // TODO : implémenter un méthode pour trier les rdv suivant leur horaires
+
         return tab;
 
     }
@@ -203,10 +210,10 @@ public class DaysActivity extends AppCompatActivity {
 
     /**
      * Affiche une liste de rdvs dans la page
-     * @param tab l'ensemble des rdvs à afficher
      */
-    public void afficherRdvs(ArrayList<String> tab){
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, tab);
+    public void afficherRdvs(){
+        // On créé un Adapter
+        RdvListViewAdapter adapter = new RdvListViewAdapter(this, rdvArrayList);
         ListView cl = (ListView) findViewById(R.id.planning);
         cl.setAdapter(adapter);
     };
@@ -317,4 +324,120 @@ public class DaysActivity extends AppCompatActivity {
         }
     }
 
-}
+
+
+    public class RdvListViewAdapter extends BaseAdapter {
+        Context mContext;
+        LayoutInflater inflater;
+
+
+        public RdvListViewAdapter(Context context, ArrayList<Rdv> objects) {
+            this.mContext = context;
+            this.inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        }
+
+        @Override
+        public int getCount() {
+            return rdvArrayList.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return rdvArrayList.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int pos, View inView, ViewGroup parent) {
+            final RdvViewHolder holder;
+
+            // Si la ligne n'éxiste pas, on créé la ligne
+            if (inView == null) {
+                inView = this.inflater.inflate(R.layout.rdv_view, parent, false);
+                holder = new RdvViewHolder();
+                // On affecte les views
+                holder.horaire = (TextView) inView.findViewById(R.id.horaire);
+                holder.nom = (TextView) inView.findViewById(R.id.nom);
+                holder.delete = (ImageButton) inView.findViewById(R.id.delete);
+                inView.setTag(holder);
+            }
+            // Sinon on récupère la ligne qui est en mémoire
+            else
+                holder = (RdvViewHolder) inView.getTag();
+
+            // On récupère l'objet courant
+            Rdv rdv = rdvArrayList.get(pos);
+
+            // On met à jour nos views
+            holder.horaire.setText(rdv.getHoraire());
+            holder.nom.setText(rdv.getNom());
+            holder.delete.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    confirmSuppression(holder.horaire.getText().toString(), holder.nom.getText().toString());
+                }
+            });
+
+            return (inView);
+        }
+
+        @Override
+        public boolean isEnabled(int position) {
+            return true;
+        }
+
+
+        public void supprimerRDV(String horaire, String nom) {
+            Toast.makeText(mContext,
+                    "Suppression du rendez-vous : " + nom + "prévu à " + horaire,
+                    Toast.LENGTH_SHORT).show();
+        }
+
+
+        /**
+         * Affiche un popup pour demander la confirmation pour la suppression d'un rdv
+         *
+         * @param horaire horaire du rdv à supprimer
+         * @param nom     nom du rdv à supprimer
+         */
+        public void confirmSuppression(final String horaire, final String nom) {
+            final AlertDialog.Builder alert = new AlertDialog.Builder(mContext);
+            alert.setTitle("Supprimer Rendez-vous").setMessage("Voulez-vous supprimer le rendez-vous : \n" + nom + " prévu à " + horaire).setPositiveButton("Suppr",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog,
+                                            int whichButton) {
+                            supprimerRdv(horaire, nom);
+                        }
+                    }).setNegativeButton("Cancel",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog,
+                                            int whichButton) {
+
+                        }
+                    });
+            alert.show();
+        }
+
+
+        /**
+         * supprime un rdv de la liste des rdv et affiche la nouvelle liste
+         *
+         * @param horaire horaire du rdv a supprimer
+         * @param nom     nom du rdv a supprimer
+         */
+        public void supprimerRdv(String horaire, String nom) {
+            Toast.makeText(mContext,
+                    "Suppression du rendez-vous : " + nom + "prévu à " + horaire,
+                    Toast.LENGTH_SHORT).show();
+
+            rdvArrayList.remove(new Rdv(nom, horaire));
+            afficherRdvs();
+        }
+    }
+
+
+    }

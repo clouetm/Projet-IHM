@@ -53,4 +53,13 @@ public class Rdv implements Comparable {
         Rdv rdv = (Rdv) o;
         return this.horaire.compareTo(rdv.getHoraire());
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        boolean equals = false;
+        Rdv rdv = (Rdv) obj;
+        if(rdv.getNom().equals(this.nom) && rdv.getHoraire().equals(this.horaire)) equals = true;
+        return equals;
+    }
+
 }
