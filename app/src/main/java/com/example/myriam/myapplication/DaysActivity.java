@@ -41,20 +41,18 @@ public class DaysActivity extends AppCompatActivity {
     ArrayList<Rdv> rdvArrayList = new ArrayList<>();
 
     /**
-     * objet permettant la lecture de texte
-     */
-    TextToSpeech txtToSpeech;
-
-    /**
      * Date associée à l'activité
      */
     Calendar day;
 
 
-    SpeechRecognizer speechRec;
-
 
     private final int REQ_CODE_SPEECH_INPUT = 100;
+
+    private SpeechRec speechRec;
+
+
+    private TextToSpeech txtToSpeech;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +79,9 @@ public class DaysActivity extends AppCompatActivity {
             // si page d'acceuil : aujourd'hui
             setTitle(dateFormat.format(day.getTime()));
         }
+
+
+        speechRec = new SpeechRec(day);
 
 
         // initialisation du lecteur de texte
@@ -235,12 +236,15 @@ public class DaysActivity extends AppCompatActivity {
         }
     }
 
+
+
     /**
      * Lis la liste des rdv de la page
      */
     public void lecture(){
         txtToSpeech.speak(textALire(), TextToSpeech.QUEUE_FLUSH, null);
     }
+
 
     /**
      * Créer le texte à lire à partir des rdvs de la page
@@ -293,7 +297,14 @@ public class DaysActivity extends AppCompatActivity {
                     ArrayList<String> result = data
                             .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
 
-                    String action = reconnaissanceAction(result.get(0));
+                    //String action = reconnaissanceAction(result.get(0));
+                    Action actionRec = speechRec.reconnaissanceAction(result.get(0));
+                    String action = "";
+                    if (actionRec.typeAction == Action.TypeAction.AJOUTER){
+                        action += "Ajouter ";
+                    }
+                    action += "rendez-vous " + actionRec.rdv.getNom() + " à " + actionRec.rdv.getHoraire();
+                    addRdv(actionRec.rdv.getNom(), actionRec.rdv.getHoraire());
 
                     Toast.makeText(getApplicationContext(),
                             action,
@@ -306,58 +317,4 @@ public class DaysActivity extends AppCompatActivity {
         }
     }
 
-    int numTest = 1;
-
-    /**
-     * analyse de la phrase entendue pour reconnaitre l'action à effectuer
-     * @param phrase phrase entendue
-     * @return une String correspondant à l'action reconnue
-     */
-    public String reconnaissanceAction(String phrase){
-        String[] mots = phrase.split("\\s+");
-
-        String action = "" ;
-        String nom = "rendez-vous";
-        DateFormat horaireFormatHeures = new SimpleDateFormat("HH");
-        DateFormat horaireFormatMinutes = new SimpleDateFormat("mm");
-        String horaire = horaireFormatHeures.format(day.getTime()) +"h"+ horaireFormatMinutes.format(day.getTime());
-
-        ArrayList<String> list_mot = new ArrayList<String>();
-
-        for(int i=0; i < mots.length; i++){
-            list_mot.add(mots[i]);
-        }
-        if(list_mot.contains("ajouter")){
-            action = "ajouter";
-            if(list_mot.contains("rendez-vous")){
-                if(list_mot.get(list_mot.indexOf("rendez-vous")+1) != "a" &&
-                        list_mot.get(list_mot.indexOf("rendez-vous")+1) != "à"){
-                            nom = list_mot.get(list_mot.indexOf("rendez-vous")+1);
-
-                }
-                if(list_mot.contains("à")){
-                    horaire = list_mot.get(list_mot.indexOf("à")+1);
-                }
-            }
-        }
-
-        //!!!!!!!!!!!!!!!!!!!!!!!
-        // rdv fixe pour les premiers tests utilisateurs
-        //!!!!!!!!!!!!!!!!!!!!!!!
-        if(numTest == 1){
-            nom = "médical";
-            horaire = "13h30";
-            action="ajouter";
-            numTest = 2;
-        }
-        else {
-            nom = "stage";
-            horaire = "8h";
-            action="ajouter";
-            numTest = 1;
-        }
-
-        addRdv(nom, horaire);
-        return action + " :" + nom + " à " + horaire ;
-    }
 }
