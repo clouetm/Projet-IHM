@@ -176,6 +176,7 @@ public class DaysActivity extends AppCompatActivity {
      * @param horaire l'horaire du rdv
      */
     public void addRdv(String nom, String horaire){
+        Log.i("ADD","add rdv "+ nom + " à " + horaire);
         rdvArrayList.add(new Rdv(nom, horaire));
         rdvArrayList = triRdvs(rdvArrayList);
         afficherRdvs();

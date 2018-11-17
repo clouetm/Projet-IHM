@@ -1,9 +1,14 @@
 package com.example.myriam.myapplication;
 
+import android.util.Log;
+
+import java.sql.Time;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 public class SpeechRec {
 
@@ -50,26 +55,12 @@ public class SpeechRec {
             nom = list_mot.get(list_mot.indexOf("rendez-vous")+1);
         }
         if(list_mot.contains("à")){
-            horaire = list_mot.get(list_mot.indexOf("à")+1);
-        }
+            String[] time = list_mot.get(list_mot.indexOf("à")+1).split("h");
+            if(time.length > 1) horaire = time[0] + ":" + time[1];
+            if(time.length == 1) horaire = time[0] + ":00";
+            Log.i("REC","horaire " + horaire);
 
-        //!!!!!!!!!!!!!!!!!!!!!!!
-        // rdv fixe pour les premiers tests utilisateurs
-        //!!!!!!!!!!!!!!!!!!!!!!!
-        /*
-        if(numTest == 1){
-            nom = "médical";
-            horaire = "13h30";
-            typeAction = Action.TypeAction.AJOUTER;
-            numTest = 2;
         }
-        else {
-            nom = "stage";
-            horaire = "8h";
-            typeAction = Action.TypeAction.AJOUTER;
-            numTest = 1;
-        }
-        */
         return new Action(typeAction, new Rdv(nom, horaire));
     }
 
