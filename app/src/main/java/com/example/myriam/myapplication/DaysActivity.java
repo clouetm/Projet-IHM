@@ -142,6 +142,7 @@ public class DaysActivity extends AppCompatActivity {
         // valeurs pré-remplies pour la saisie des informations du RDV à ajouter
         inputNom.setText("RDV", TextView.BufferType.EDITABLE);
         DateFormat horaire = new SimpleDateFormat("HH:mm");
+        day = Calendar.getInstance();
         inputHoraire.setText(horaire.format(day.getTime()), TextView.BufferType.EDITABLE);
 
         final AlertDialog.Builder alert = new AlertDialog.Builder(this);
@@ -252,6 +253,9 @@ public class DaysActivity extends AppCompatActivity {
         txtToSpeech.speak(textALire(), TextToSpeech.QUEUE_FLUSH, null);
     }
 
+    public void lecture(String text){
+        txtToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+    }
 
     /**
      * Créer le texte à lire à partir des rdvs de la page
@@ -306,15 +310,27 @@ public class DaysActivity extends AppCompatActivity {
 
                     //String action = reconnaissanceAction(result.get(0));
                     Action actionRec = speechRec.reconnaissanceAction(result.get(0));
-                    String action = "";
+                    String actionMessage= "";
                     if (actionRec.typeAction == Action.TypeAction.AJOUTER){
-                        action += "Ajouter ";
+                        actionMessage = "Le rendez-vous " + actionRec.rdv.getNom() + " prévu à " + actionRec.rdv.getHoraire() + " a été ajouté.";
+                        addRdv(actionRec.rdv.getNom(), actionRec.rdv.getHoraire());
                     }
-                    action += "rendez-vous " + actionRec.rdv.getNom() + " à " + actionRec.rdv.getHoraire();
-                    addRdv(actionRec.rdv.getNom(), actionRec.rdv.getHoraire());
+                    if(actionRec.typeAction == Action.TypeAction.NO_REC){
+                        actionMessage= "Je n'ai pas compris. Veuillez essayer à nouveau.";
+                    }
+                    if(actionRec.typeAction == Action.TypeAction.SUPPRIMER){
+                        actionMessage ="";
+                        if(rdvArrayList.indexOf(actionRec.rdv) >= 0){
+                            confirmSuppression(actionRec.rdv.getHoraire(), actionRec.rdv.getNom());
+                        }
+                        else {
+                            actionMessage = "Je n'ai pas trouvé le rendez-vous à supprimer. \n Veuillez essayer à nouveau.";
+                        }
 
+                    }
+                    lecture(actionMessage);
                     Toast.makeText(getApplicationContext(),
-                            action,
+                            actionMessage,
                             Toast.LENGTH_SHORT).show();
 
                 }
@@ -326,6 +342,72 @@ public class DaysActivity extends AppCompatActivity {
 
 
 
+
+    /**
+     * Affiche un popup pour demander la confirmation pour la suppression d'un rdv
+     *
+     * @param horaire horaire du rdv à supprimer
+     * @param nom     nom du rdv à supprimer
+     */
+    public void confirmSuppression(final String horaire, final String nom) {
+
+        final AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        String phrase_confimation = "Supprimer le rendez-vous  "+ nom + " prévu à  "+ horaire +" ?";
+        // définition du popup pour confirmer la suppression du rdv
+        alert.setTitle("Supprimer RDV").setMessage(phrase_confimation).setPositiveButton("Ok",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,
+                                        int whichButton) {
+                        Log.i("AlertDialog","supprimer");
+                        //Log.i("AlertDialog","TextEntry 2 Entered "+inputHoraire.getText().toString());
+                        /* User clicked OK so do some stuff */
+                        supprimerRdv(horaire, nom);
+                    }
+                }).setNegativeButton("Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,
+                                        int whichButton) {
+                        /*
+                         * User clicked cancel so do some stuff
+                         */
+                    }
+                });
+        // retour audio sur la confirmation de la suppression
+        lecture(phrase_confimation);
+
+        alert.show();
+    }
+
+    /**
+     * supprime un rdv de la liste des rdv et affiche la nouvelle liste
+     *
+     * @param horaire horaire du rdv a supprimer
+     * @param nom     nom du rdv a supprimer
+     */
+    public void supprimerRdv(String horaire, String nom) {
+        /*
+        Toast.makeText(getApplicationContext(),
+                "Suppression du rendez-vous : " + nom + "prévu à " + horaire,
+                Toast.LENGTH_SHORT).show();
+        */
+
+        // suppression du rdv dans la liste
+        rdvArrayList.remove(new Rdv(nom, horaire));
+
+        // retour audio sur la suppression du rdv
+        String phrase_confimation = "Le rendez-vous a été supprimé. " ;
+        lecture(phrase_confimation);
+
+        // mise à jour de l'affichage de la liste des rdvs
+        afficherRdvs();
+    }
+
+
+    /**
+     * Classe pour la définition de l'interface pour l'affichage de la liste de rdv
+     * Les objets affichés et les fonctions associées aux éléments de la liste
+     */
     public class RdvListViewAdapter extends BaseAdapter {
         Context mContext;
         LayoutInflater inflater;
@@ -388,13 +470,6 @@ public class DaysActivity extends AppCompatActivity {
         @Override
         public boolean isEnabled(int position) {
             return true;
-        }
-
-
-        public void supprimerRDV(String horaire, String nom) {
-            Toast.makeText(mContext,
-                    "Suppression du rendez-vous : " + nom + "prévu à " + horaire,
-                    Toast.LENGTH_SHORT).show();
         }
 
 

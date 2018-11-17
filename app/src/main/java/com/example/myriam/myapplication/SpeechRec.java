@@ -43,6 +43,9 @@ public class SpeechRec {
         if(list_mot.contains("ajouter")){
             typeAction = Action.TypeAction.AJOUTER;
         }
+        if(list_mot.contains("supprimer")){
+            typeAction = Action.TypeAction.SUPPRIMER;
+        }
         if(list_mot.contains("rendez-vous")){
             nom = list_mot.get(list_mot.indexOf("rendez-vous")+1);
         }
@@ -53,6 +56,7 @@ public class SpeechRec {
         //!!!!!!!!!!!!!!!!!!!!!!!
         // rdv fixe pour les premiers tests utilisateurs
         //!!!!!!!!!!!!!!!!!!!!!!!
+        /*
         if(numTest == 1){
             nom = "médical";
             horaire = "13h30";
@@ -65,7 +69,7 @@ public class SpeechRec {
             typeAction = Action.TypeAction.AJOUTER;
             numTest = 1;
         }
-
+        */
         return new Action(typeAction, new Rdv(nom, horaire));
     }
 
