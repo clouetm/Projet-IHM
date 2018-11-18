@@ -33,6 +33,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 
@@ -191,10 +193,8 @@ public class DaysActivity extends AppCompatActivity {
      * // TODO : not implemented yet
      */
     public ArrayList<Rdv> triRdvs(ArrayList<Rdv> tab){
-        // TODO : implémenter un méthode pour trier les rdv suivant leur horaires
-
+        Collections.sort(tab);
         return tab;
-
     }
 
     /**
