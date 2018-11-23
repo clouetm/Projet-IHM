@@ -48,6 +48,9 @@ public class SpeechRec {
         if(list_mot.contains("ajouter")){
             typeAction = Action.TypeAction.AJOUTER;
         }
+        if(list_mot.contains("modifier")){
+            typeAction = Action.TypeAction.MODIFIER;
+        }
         if(list_mot.contains("supprimer")){
             typeAction = Action.TypeAction.SUPPRIMER;
         }

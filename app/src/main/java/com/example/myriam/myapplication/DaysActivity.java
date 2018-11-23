@@ -56,10 +56,7 @@ public class DaysActivity extends AppCompatActivity {
 
 
     private final int REQ_CODE_SPEECH_INPUT = 100;
-
     private SpeechRec speechRec;
-
-
     private TextToSpeech txtToSpeech;
 
     @Override
@@ -107,7 +104,7 @@ public class DaysActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                saisieNewRdv(view);
+                saisieNewRdv(view, null, null, false);
             }
         });
 
@@ -132,7 +129,8 @@ public class DaysActivity extends AppCompatActivity {
      * Affiche un popup pour la saisi d'un rdv
      * @param view la vue attachée au popup
      */
-    public void saisieNewRdv(View view){
+    public void saisieNewRdv(View view, final String currhoraire, final String currnom, final boolean isModifying){
+
         LayoutInflater factory = LayoutInflater.from(this);
 
         //text_entry is an Layout XML file containing two text field to display in alert dialog
@@ -142,8 +140,19 @@ public class DaysActivity extends AppCompatActivity {
         final EditText inputHoraire = (EditText) textEntryView.findViewById(R.id.EditText1);
 
         // valeurs pré-remplies pour la saisie des informations du RDV à ajouter
-        inputNom.setText("RDV", TextView.BufferType.EDITABLE);
+
+        if(currnom!=null){
+            inputNom.setText(currnom, TextView.BufferType.EDITABLE);
+        }
+        else {
+            inputNom.setText("RDV", TextView.BufferType.EDITABLE);
+        }
+
         DateFormat horaire = new SimpleDateFormat("HH:mm");
+        if(currhoraire!=null) {
+            horaire = new SimpleDateFormat(currhoraire);
+        }
+
         day = Calendar.getInstance();
         inputHoraire.setText(horaire.format(day.getTime()), TextView.BufferType.EDITABLE);
 
@@ -156,6 +165,12 @@ public class DaysActivity extends AppCompatActivity {
                         Log.i("AlertDialog","TextEntry 1 Entered "+inputNom.getText().toString());
                         Log.i("AlertDialog","TextEntry 2 Entered "+inputHoraire.getText().toString());
                         /* User clicked OK so do some stuff */
+
+                        // If the user was modifying the rdv, we delete it first, then add it with the changes
+                        if(isModifying)
+                        {
+                            rdvArrayList.remove(new Rdv(currnom, currhoraire));
+                        }
                         addRdv(inputNom.getText().toString(), inputHoraire.getText().toString());
                     }
                 }).setNegativeButton("Cancel",
@@ -190,7 +205,6 @@ public class DaysActivity extends AppCompatActivity {
      * Tri un un tableau de Rdv
      * @param tab le tableau à trier
      * @return le tableau trier
-     * // TODO : not implemented yet
      */
     public ArrayList<Rdv> triRdvs(ArrayList<Rdv> tab){
         Collections.sort(tab);
@@ -319,6 +333,17 @@ public class DaysActivity extends AppCompatActivity {
                     if(actionRec.typeAction == Action.TypeAction.NO_REC){
                         actionMessage= "Je n'ai pas compris. Veuillez essayer à nouveau.";
                     }
+                    if(actionRec.typeAction == Action.TypeAction.MODIFIER){
+                        actionMessage ="";
+
+                        if(rdvArrayList.indexOf(actionRec.rdv) >= 0){
+
+                        }
+                        else {
+                            actionMessage = "Je n'ai pas trouvé le rendez-vous à modifier. \n Veuillez essayer à nouveau.";
+                        }
+                    }
+
                     if(actionRec.typeAction == Action.TypeAction.SUPPRIMER){
                         actionMessage ="";
                         if(rdvArrayList.indexOf(actionRec.rdv) >= 0){
@@ -378,6 +403,24 @@ public class DaysActivity extends AppCompatActivity {
         lecture(phrase_confimation);
 
         alert.show();
+    }
+
+    /**
+     * Modifier un rdv de la liste des rdv
+     *
+     * @param horaire horaire du rdv a modifier
+     * @param nom     nom du rdv a modifier
+     */
+    public void modifierRdv(View view, String horaire, String nom) {
+
+        //Popup saisie rdv
+
+        saisieNewRdv(view, horaire, nom, true);
+
+        String phrase_confimation = "Le rendez-vous a été modifié.";
+        lecture(phrase_confimation);
+        // mise à jour de l'affichage de la liste des rdvs
+        afficherRdvs();
     }
 
     /**
@@ -453,11 +496,26 @@ public class DaysActivity extends AppCompatActivity {
                 holder = (RdvViewHolder) inView.getTag();
 
             // On récupère l'objet courant
-            Rdv rdv = rdvArrayList.get(pos);
+            final Rdv rdv = rdvArrayList.get(pos);
 
             // On met à jour nos views
-            holder.horaire.setText(rdv.getHoraire());
+            final String currhorr = rdv.getHoraire();
+            final String currnom = rdv.getNom();
+
+            holder.horaire.setText(currhorr);
+            holder.horaire.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    modifierRdv(v,currhorr,currnom);
+                }
+            });
             holder.nom.setText(rdv.getNom());
+            holder.nom.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    modifierRdv(v,currhorr,currnom);
+                }
+            });
             holder.delete.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
