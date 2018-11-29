@@ -333,14 +333,22 @@ public class DaysActivity extends AppCompatActivity {
                     if(actionRec.typeAction == Action.TypeAction.NO_REC){
                         actionMessage= "Je n'ai pas compris. Veuillez essayer à nouveau.";
                     }
-                    if(actionRec.typeAction == Action.TypeAction.MODIFIER){
+                    if(actionRec.typeAction == Action.TypeAction.DEPLACER){
                         actionMessage ="";
+                        boolean rdvFound = false;
 
-                        if(rdvArrayList.indexOf(actionRec.rdv) >= 0){
-
+                        for (Rdv rdv : rdvArrayList) {
+                            if (rdv.getNom().equals(actionRec.rdv.getNom())) {
+                                String tmpHor = rdv.getHoraire();
+                                rdvFound = true;
+                                rdvArrayList.remove(new Rdv(rdv.getNom(), tmpHor));
+                            }
+                        }
+                        if(!rdvFound) {
+                            actionMessage = "Je n'ai pas trouvé le rendez-vous à modifier. \n Veuillez essayer à nouveau.";
                         }
                         else {
-                            actionMessage = "Je n'ai pas trouvé le rendez-vous à modifier. \n Veuillez essayer à nouveau.";
+                            addRdv(actionRec.rdv.getNom(), actionRec.rdv.getHoraire());
                         }
                     }
 
