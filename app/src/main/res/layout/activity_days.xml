@@ -21,6 +21,7 @@
     </android.support.design.widget.AppBarLayout>
 
     <include layout="@layout/content_days" />
+    <include layout="@layout/help_add_rdv" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

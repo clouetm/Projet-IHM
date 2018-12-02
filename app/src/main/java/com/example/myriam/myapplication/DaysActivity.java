@@ -14,6 +14,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.Toolbar;
+import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,6 +26,7 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -63,6 +65,14 @@ public class DaysActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_days);
+        LinearLayout layoutHelpAddRdv = (LinearLayout) findViewById(R.id.help_add_rdv);
+
+        if (rdvArrayList.size()==0){
+            layoutHelpAddRdv.setVisibility(View.VISIBLE);
+        }else{
+            layoutHelpAddRdv.setVisibility(View.INVISIBLE);
+        }
+
 
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -228,10 +238,12 @@ public class DaysActivity extends AppCompatActivity {
      * Affiche une liste de rdvs dans la page
      */
     public void afficherRdvs(){
-        // On créé un Adapter
-        RdvListViewAdapter adapter = new RdvListViewAdapter(this, rdvArrayList);
-        ListView cl = (ListView) findViewById(R.id.planning);
-        cl.setAdapter(adapter);
+        //if (rdvArrayList.size()!=0){
+            // On créé un Adapter
+            RdvListViewAdapter adapter = new RdvListViewAdapter(this, rdvArrayList);
+            ListView cl = (ListView) findViewById(R.id.planning);
+            cl.setAdapter(adapter);
+       // }
     };
 
 
