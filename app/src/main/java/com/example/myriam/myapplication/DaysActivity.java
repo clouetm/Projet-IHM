@@ -67,15 +67,6 @@ public class DaysActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_days);
         LinearLayout layoutHelpAddRdv = (LinearLayout) findViewById(R.id.help_add_rdv);
-
-        if (rdvArrayList.size()==0){
-            layoutHelpAddRdv.setVisibility(View.VISIBLE);
-        }else{
-            layoutHelpAddRdv.setVisibility(View.INVISIBLE);
-        }
-
-
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -251,12 +242,11 @@ public class DaysActivity extends AppCompatActivity {
      * Affiche une liste de rdvs dans la page
      */
     public void afficherRdvs(){
-        //if (rdvArrayList.size()!=0){
             // On créé un Adapter
             RdvListViewAdapter adapter = new RdvListViewAdapter(this, rdvArrayList);
             ListView cl = (ListView) findViewById(R.id.planning);
             cl.setAdapter(adapter);
-       // }
+            chargeContentView();
     };
 
 
@@ -606,5 +596,13 @@ public class DaysActivity extends AppCompatActivity {
         }
     }
 
+    private void chargeContentView(){
+        LinearLayout layoutHelpAddRdv = (LinearLayout) findViewById(R.id.help_add_rdv);
+        if (rdvArrayList.size()==0){
+            layoutHelpAddRdv.setVisibility(View.VISIBLE);
+        }else{
+            layoutHelpAddRdv.setVisibility(View.INVISIBLE);
+        }
+    }
 
     }
