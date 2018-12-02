@@ -29,6 +29,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import java.text.DateFormat;
@@ -134,20 +135,23 @@ public class DaysActivity extends AppCompatActivity {
 
     }
 
-
+    boolean timePicker = false;
     /**
      * Affiche un popup pour la saisi d'un rdv
      * @param view la vue attachée au popup
      */
     public void saisieNewRdv(View view, final String currhoraire, final String currnom, final boolean isModifying){
 
-        LayoutInflater factory = LayoutInflater.from(this);
+        final LayoutInflater factory = LayoutInflater.from(this);
 
         //text_entry is an Layout XML file containing two text field to display in alert dialog
         final View textEntryView = factory.inflate(R.layout.text_entry, null);
 
+
+
         final EditText inputNom = (EditText) textEntryView.findViewById(R.id.EditText2);
-        final EditText inputHoraire = (EditText) textEntryView.findViewById(R.id.EditText1);
+        final TimePicker inputHoraire = (TimePicker) textEntryView.findViewById(R.id.TimePicker);
+        inputHoraire.setIs24HourView(true);
 
         // valeurs pré-remplies pour la saisie des informations du RDV à ajouter
 
@@ -159,12 +163,20 @@ public class DaysActivity extends AppCompatActivity {
         }
 
         DateFormat horaire = new SimpleDateFormat("HH:mm");
+
         if(currhoraire!=null) {
             horaire = new SimpleDateFormat(currhoraire);
         }
 
         day = Calendar.getInstance();
-        inputHoraire.setText(horaire.format(day.getTime()), TextView.BufferType.EDITABLE);
+        //inputHoraire.setText(horaire.format(day.getTime()), TextView.BufferType.EDITABLE);
+
+
+        DateFormat hours = new SimpleDateFormat("HH");
+        DateFormat min = new SimpleDateFormat("mm");
+        inputHoraire.setCurrentHour(new Integer(hours.format(day.getTime())));
+        inputHoraire.setCurrentMinute(new Integer(min.format(day.getTime())));
+
 
         final AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setIcon(R.drawable.baseline_add_black_18dp).setTitle("Saisir un rendez-vous :").setView(textEntryView).setPositiveButton("Save",
@@ -173,7 +185,7 @@ public class DaysActivity extends AppCompatActivity {
                                         int whichButton) {
 
                         Log.i("AlertDialog","TextEntry 1 Entered "+inputNom.getText().toString());
-                        Log.i("AlertDialog","TextEntry 2 Entered "+inputHoraire.getText().toString());
+                        Log.i("AlertDialog","TextEntry 2 Entered "+"" + inputHoraire.getCurrentHour() + ":" + inputHoraire.getCurrentMinute() );
                         /* User clicked OK so do some stuff */
 
                         // If the user was modifying the rdv, we delete it first, then add it with the changes
@@ -181,7 +193,8 @@ public class DaysActivity extends AppCompatActivity {
                         {
                             rdvArrayList.remove(new Rdv(currnom, currhoraire));
                         }
-                        addRdv(inputNom.getText().toString(), inputHoraire.getText().toString());
+
+                        addRdv(inputNom.getText().toString(), "" + inputHoraire.getCurrentHour() + ":" + inputHoraire.getCurrentMinute() );
                     }
                 }).setNegativeButton("Cancel",
                 new DialogInterface.OnClickListener() {
@@ -345,14 +358,22 @@ public class DaysActivity extends AppCompatActivity {
                     if(actionRec.typeAction == Action.TypeAction.NO_REC){
                         actionMessage= "Je n'ai pas compris. Veuillez essayer à nouveau.";
                     }
-                    if(actionRec.typeAction == Action.TypeAction.MODIFIER){
+                    if(actionRec.typeAction == Action.TypeAction.DEPLACER){
                         actionMessage ="";
+                        boolean rdvFound = false;
 
-                        if(rdvArrayList.indexOf(actionRec.rdv) >= 0){
-
+                        for (Rdv rdv : rdvArrayList) {
+                            if (rdv.getNom().equals(actionRec.rdv.getNom())) {
+                                String tmpHor = rdv.getHoraire();
+                                rdvFound = true;
+                                rdvArrayList.remove(new Rdv(rdv.getNom(), tmpHor));
+                            }
+                        }
+                        if(!rdvFound) {
+                            actionMessage = "Je n'ai pas trouvé le rendez-vous à modifier. \n Veuillez essayer à nouveau.";
                         }
                         else {
-                            actionMessage = "Je n'ai pas trouvé le rendez-vous à modifier. \n Veuillez essayer à nouveau.";
+                            addRdv(actionRec.rdv.getNom(), actionRec.rdv.getHoraire());
                         }
                     }
 
@@ -429,8 +450,8 @@ public class DaysActivity extends AppCompatActivity {
 
         saisieNewRdv(view, horaire, nom, true);
 
-        String phrase_confimation = "Le rendez-vous a été modifié.";
-        lecture(phrase_confimation);
+        //String phrase_confimation = "Le rendez-vous a été modifié.";
+        //lecture(phrase_confimation);
         // mise à jour de l'affichage de la liste des rdvs
         afficherRdvs();
     }

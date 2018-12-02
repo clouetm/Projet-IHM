@@ -48,8 +48,8 @@ public class SpeechRec {
         if(list_mot.contains("ajouter")){
             typeAction = Action.TypeAction.AJOUTER;
         }
-        if(list_mot.contains("modifier")){
-            typeAction = Action.TypeAction.MODIFIER;
+        if(list_mot.contains("déplacer")){
+            typeAction = Action.TypeAction.DEPLACER;
         }
         if(list_mot.contains("supprimer")){
             typeAction = Action.TypeAction.SUPPRIMER;
@@ -64,7 +64,9 @@ public class SpeechRec {
             Log.i("REC","horaire " + horaire);
 
         }
+
         return new Action(typeAction, new Rdv(nom, horaire));
+
     }
 
 }
